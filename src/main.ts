@@ -412,13 +412,6 @@ async function onClaim(kind: "quote" | "base") {
   }
 }
 
-function updateXDraft() {
-  const name = ($input("projName").value ?? "Ammora Launchpad").trim() || "Ammora Launchpad";
-  const link = ($input("webLink").value ?? "").trim();
-  const text = `Saya baru saja membangun launchpad dengan Ammora SDK di GIWA Sepolia\n\n${name} — buat token baru + bonding curve, lalu graduate ke pool AMM.\n\nTestnet chain 91342 • @AmmoraHQ #Ammora #GIWA${link ? `\n\n${link}` : ""}`;
-  ($("xDraft") as HTMLAnchorElement).href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-}
-
 function wire() {
   $("walletBtn").addEventListener("click", async () => {
     try {
@@ -495,14 +488,6 @@ function wire() {
   $("migrateBtn").addEventListener("click", () => { void onMigrate(); });
   $("claimQuoteBtn").addEventListener("click", () => { void onClaim("quote"); });
   $("claimBaseBtn").addEventListener("click", () => { void onClaim("base"); });
-  $("copyCode").addEventListener("click", () => {
-    const txt = $("codeBlock").textContent ?? "";
-    navigator.clipboard?.writeText(txt).then(() => toast("Kode disalin.")).catch(() => toast("Salin manual dari blok kode."));
-  });
-  $("projName").addEventListener("input", updateXDraft);
-  $("webLink").addEventListener("input", updateXDraft);
-  $input("webLink").value = "https://mhmdyvsvf.github.io/ammora-launchpad";
-  updateXDraft();
 }
 
 wire();

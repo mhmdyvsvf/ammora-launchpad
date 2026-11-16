@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ammora Launchpad — GIWA Sepolia Testnet</title>
-  <script type="module" crossorigin src="./assets/index-goDVVQ5r.js"></script>
+  <script type="module" crossorigin src="./assets/index-_Tp2ddDC.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-B7908exf.css">
 </head>
 <body>
@@ -122,81 +122,6 @@
     <b>Aktivitas on-chain</b>
     <ul id="txList"></ul>
   </div>
-</section>
-
-<section class="card">
-  <h2>Bagaimana ini bekerja (kode SDK asli)</h2>
-  <p class="sub">Setiap langkah di halaman ini memanggil fungsi SDK yang sama seperti di bawah. Bukan simulasi — ini yang benar-benar dijalankan di browser kamu.</p>
-  <pre id="codeBlock" style="white-space:pre-wrap;font-size:12px">// 1. Verifikasi core + baca template (sekali, di blok final)
-const head = await resolveAmmoraFinalizedHead([publicClient], giwaSepoliaAutoRoute.finality);
-await verifyAmmoraV4CoreAtBlock(publicClient, head);
-const template = await getAmmoraV4ConfigAtBlock(publicClient, head, TEMPLATE_ID); // 6
-
-// 2. Quick Create — derive Config dari template, lalu satu transaksi:
-//    Config + token + kurva (to = factory, data + value dari builder)
-const template = await getAmmoraV4ConfigAtBlock(publicClient, REGISTRY, 6n, head);
-const policy = parseTeamRecipientPolicy({ schemaVersion: 1, chainId: 91342, registry: REGISTRY,
-  templateId: "6", templateHash: template.configHash,
-  configOwner: account, partnerRecipient: account, liquidityPartner: account, leftoverReceiver: account });
-const team = planTeamConfig(template, policy, { chainId: 91342, registry: REGISTRY }, saleSupplyRaw, quoteThresholdRaw);
-const built = buildRegisterConfigAndCreateAmmoraV4Launch(team.config, team.curve, {
-  name, symbol, metadataURI, creatorMetadataURI: metadataURI, tokenDecimals: team.config.tokenDecimals,
-  callback: zeroAddress, callbackData: "0x",
-});
-await walletClient.sendTransaction({ to: FACTORY, data: built.data, value: built.value });
-const receipt = await publicClient.waitForTransactionReceipt({ hash, confirmations: 13 });
-const config = parseAmmoraV4ConfigCreatedReceipt(receipt, REGISTRY);
-const { token, curve } = parseAmmoraV4LaunchCreatedReceipt(receipt, FACTORY); // dibaca dari event, bukan prediksi
-
-// 3. Atomic Create + First Buy — Config + token + kurva + first buy (satu tx)
-const { plan } = await planTeamAtomicFromCatalog(publicClient, head, policy, {
-  account, saleSupplyRaw, quoteThresholdRaw, name, symbol, metadataURI,
-  quoteRaw, minimumBaseRaw: 1n, maxFeePerGasWei: gasPrice * 2n, deadline,
-});
-if (plan.status === "APPROVAL_REQUIRED") { await walletClient.sendTransaction(plan.transaction); /* lalu re-plan di blok baru */ }
-if (plan.status === "READY") { await walletClient.sendTransaction(plan.transaction); }
-const swap = parseAmmoraV4SwapReceipt(receipt, launch.curve); // trader harus = first-buy executor
-
-// 4. Trade di kurva — quote dulu, klasifikasi fill, baru kirim
-const sdk = new AmmoraV4LaunchCurveClient(publicClient, curve, { launchFactory: FACTORY, feePolicy: FEE_POLICY });
-const plan = await planCurveAtBlock(publicClient, CORE, curve, { blockNumber: head, tokenIn, amountIn,
-  recipient: account, deadline: block.timestamp + 1200n, slippageBps: 100 });
-const fill = classifyAmmoraV4ExactInputFill(plan.quote, plan.baseForQuote); // ordinary fills harus "full"
-const prepared = await PreparedExactInputSwap.create({ client: executionClient, chainId: 91342, payer: account,
-  quoteTtlMs: 30_000, createPlan: async () => ({ transaction: plan.transaction,
-    approvalRequirements: plan.approvalRequirements, quoteBlockNumber: head,
-    quote: { model: "dbc", pool: curve, tokenIn, inputAsset: "erc20", tokenOut: plan.tokenOut, amountIn,
-      fillableAmountIn: plan.quote.amountIn, remainderAmountIn: plan.quote.amountLeft,
-      expectedAmountOut: plan.quote.amountOut, minimumAmountOut: plan.quote.minimumAmountOut,
-      feeAmount: plan.quote.fee, feeToken: null, priceImpactBps: null, recipient: account, details: { snapshotBlock: head, snapshotHash: block.hash, policy: giwaSepoliaAutoRoute.finality, note: "Confirmed snapshot quote, not a latest execution-price guarantee.", quote: plan.quote } } }) });
-const { receipt, amountReceived } = await prepared.execute(walletClient, { onStatus: (s) => console.log(s.type) });
-
-// 5. Migrate setelah threshold tercapai
-const sdk = new AmmoraV4LaunchCurveClient(publicClient, curve, { launchFactory: FACTORY, feePolicy: FEE_POLICY });
-const plan = await sdk.planMigrateAtBlock(head);
-await walletClient.sendTransaction({ to: plan.transaction.to, data: plan.transaction.data });
-
-// 6. Daftar launch asli — Data API dulu, fallback scan event on-chain
-const api = new AmmoraDataApiClient("https://ammora-giwa-sepolia-data.fly.dev");
-const { items } = await api.getLaunches({ chainId: "91342" }); // Data API (saat ini 503)
-const logs = await publicClient.getLogs({ address: FACTORY, event: parseAbiItem("event LaunchCreated(address indexed token,address indexed curve,address indexed creator,uint256 configId,bytes32 configHash,uint16 protocolVersion,string metadataURI)"), fromBlock: 36_220_000n, toBlock: head });
-</pre>
-  <button class="btn btn-outline" id="copyCode" type="button" style="margin-top:12px">Salin Kode</button>
-  <p class="hint" style="margin-top:10px">Catatan: halaman ini membaca data langsung dari GIWA Sepolia RPC dan Ammora Data API. Saat Data API tidak menjawab (503), daftar launch dibaca dari event LaunchCreated on-chain.</p>
-</section>
-
-<section class="card">
-  <h2>Submit Misi (ammora.org)</h2>
-  <p class="sub">Setelah launchpad ini live di GitHub Pages, isi form misi dengan data di bawah. Link X hanya draft — kamu yang posting sendiri.</p>
-  <div class="form">
-    <div class="field"><label for="projName">Nama proyek</label><input id="projName" value="Ammora Launchpad"></div>
-    <div class="field"><label for="webLink">Link website</label><input id="webLink" value="https://mhmdyvsvf.github.io/ammora-launchpad"></div>
-    <div class="field"><label for="xLink">Link postingan X</label><input id="xLink" placeholder="Tempel setelah kamu posting draft di bawah"></div>
-    <div class="field" style="grid-column:1/-1"><label>Draft X (klik untuk membuka editor X — Muse tidak pernah posting)</label>
-      <a class="btn btn-outline" id="xDraft" href="https://twitter.com/intent/tweet" target="_blank" rel="noopener">Buka Draft X</a>
-    </div>
-  </div>
-  <p class="hint">Form misi: https://ammora.org/waitlist#mission — isi Project name, Website link, X post link. Hadiah: bonus draw $tAMM + SBT setelah mainnet.</p>
 </section>
 
 <footer>
