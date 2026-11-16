@@ -19,6 +19,10 @@ const fmt = (raw: bigint, decimals: number, digits = 4) => {
   const [i, f = ""] = s.split(".");
   return f ? `${i}.${f.slice(0, digits)}` : i;
 };
+const avatarBg = (a: string) => {
+  const h = parseInt(a.slice(2, 6), 16) % 360;
+  return `linear-gradient(135deg,hsl(${h} 70% 55%),hsl(${(h + 45) % 360} 70% 45%))`;
+};
 
 type Activity = { time: string; text: string; hash?: string };
 const loadActivity = (): Activity[] => {
@@ -57,6 +61,7 @@ let launches: LaunchSummary[] = [];
 let selected: LaunchSummary | null = null;
 let tradeSide: "buy" | "sell" = "buy";
 let filter: "all" | "live" | "migrate" | "graduated" = "all";
+let query = "";
 let balances = { eth: 0n, weth: 0n, tokenBalance: 0n };
 
 function statusLabel(s: number) {
@@ -110,11 +115,14 @@ async function init() {
 
 function renderTokens() {
   const grid = $("tokenGrid");
-  const list = launches.filter((l) =>
-    filter === "all" ? true
-    : filter === "live" ? l.status === 1
-    : filter === "migrate" ? l.status === 2
-    : l.status === 3);
+  const list = launches.filter((l) => {
+    const statusOk = filter === "all" ? true
+      : filter === "live" ? l.status === 1
+      : filter === "migrate" ? l.status === 2
+      : l.status === 3;
+    const queryOk = query === "" || `${l.name} ${l.symbol} ${l.token} ${l.curve}`.toLowerCase().includes(query);
+    return statusOk && queryOk;
+  });
   if (!list.length) {
     grid.innerHTML = `<div class="card" style="grid-column:1/-1"><p class="sub">Tidak ada token pada filter ini. Coba filter lain, atau buat token pertamamu di atas.</p></div>`;
     return;
@@ -123,7 +131,7 @@ function renderTokens() {
     const progress = l.migrationQuoteThreshold > 0n ? Number((l.quoteReserve * 10000n) / l.migrationQuoteThreshold) / 100 : 0;
     const pct = Math.min(100, progress);
     return `<article class="token ${selected?.curve === l.curve ? "selected" : ""}" data-curve="${l.curve}">
-      <div class="token-head"><b>${escapeHtml(l.name)} (${escapeHtml(l.symbol)})</b><span class="pill">${statusLabel(l.status)}</span></div>
+      <div class="token-head"><div class="token-top"><div class="avatar" style="background:${avatarBg(l.token)}">${escapeHtml((l.symbol || l.name || "?").charAt(0).toUpperCase())}</div><div><h3>${escapeHtml(l.name)}</h3><span class="sym">${escapeHtml(l.symbol)}</span></div></div><span class="pill">${statusLabel(l.status)}</span></div>
       <div class="kv"><span>Token</span><b class="mono"><a href="${explorerToken(l.token)}" target="_blank" rel="noopener">${shortAddr(l.token)}</a></b></div>
       <div class="kv"><span>Curve</span><b class="mono"><a href="${explorerAddress(l.curve)}" target="_blank" rel="noopener">${shortAddr(l.curve)}</a></b></div>
       <div class="kv"><span>Creator</span><b class="mono">${shortAddr(l.creator)}</b></div>
@@ -449,6 +457,11 @@ function wire() {
       filter = (t as HTMLElement).dataset.filter as typeof filter;
       renderTokens();
     }));
+
+  $("tokenSearch").addEventListener("input", () => {
+    query = ($input("tokenSearch").value ?? "").trim().toLowerCase();
+    renderTokens();
+  });
 
   $("createForm").addEventListener("submit", (e) => { e.preventDefault(); void onCreateSubmit(e as SubmitEvent); });
   $("createBtn").addEventListener("click", () => { void onCreateConfirm(); });

@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ammora Launchpad — GIWA Sepolia Testnet</title>
-  <script type="module" crossorigin src="./assets/index-CsA56ybs.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-D4sx_2nI.css">
+  <script type="module" crossorigin src="./assets/index-B-Wr93dA.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DDNPiYeC.css">
 </head>
 <body>
 <div class="wrap">
@@ -67,7 +67,13 @@
     <div class="field"><label for="tSymbol">Simbol</label><input id="tSymbol" required maxlength="8" placeholder="ML"></div>
     <div class="field" style="grid-column:1/-1"><label for="tDesc">Deskripsi (untuk metadata)</label><input id="tDesc" maxlength="200" placeholder="Token komunitas..."></div>
     <div class="field"><label for="tSupply">Total Supply (token)</label><input id="tSupply" inputmode="decimal" value="1000000"></div>
-    <div class="field"><label for="tThreshold">Batas migrate (WETH)</label><input id="tThreshold" inputmode="decimal" value="0.001"></div>
+    <details class="adv" style="grid-column:1/-1">
+      <summary>Pengaturan lanjutan</summary>
+      <div class="form">
+        <div class="field"><label for="tThreshold">Batas migrate (WETH)</label><input id="tThreshold" inputmode="decimal" value="0.001"></div>
+        <div class="field" style="grid-column:1/-1"><label for="tMeta">Metadata URI (opsional — kosongkan untuk data: URI otomatis dari nama/simbol/deskripsi)</label><input id="tMeta" placeholder="https://... atau ipfs://... atau data:application/json,..."></div>
+      </div>
+    </details>
     <div class="field" style="grid-column:1/-1">
       <label>Mode pembuatan</label>
       <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px">
@@ -76,7 +82,6 @@
       </div>
     </div>
     <div class="field" id="firstBuyRow" style="display:none"><label for="firstBuy">First buy (WETH)</label><input id="firstBuy" inputmode="decimal" value="0.0001"></div>
-    <div class="field" style="grid-column:1/-1"><label for="tMeta">Metadata URI (opsional — kosongkan untuk data: URI otomatis dari nama/simbol/deskripsi)</label><input id="tMeta" placeholder="https://... atau ipfs://... atau data:application/json,..."></div>
     <div class="field" style="grid-column:1/-1">
       <div class="preview" id="createPreview">Isi formulir, lalu klik "Buat Token" untuk preview on-chain. Preview menghitung Config + harga + value transaksi dari chain terbaru.</div>
     </div>
@@ -98,6 +103,7 @@
       <button class="tab" data-filter="graduated">Graduated</button>
     </div>
   </div>
+  <div style="margin:0 0 12px"><input id="tokenSearch" placeholder="Cari token: nama, simbol, atau alamat…" autocomplete="off"></div>
   <div id="tokenGrid" class="tokens"></div>
 </section>
 

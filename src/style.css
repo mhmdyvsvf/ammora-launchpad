@@ -150,3 +150,5 @@ footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);color:v
 .wallet-row{display:flex;gap:8px;flex-wrap:wrap}
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 #create,#tokens,#trade{scroll-margin-top:80px}
+.adv{border-top:1px dashed var(--line);margin-top:6px;padding-top:4px}
+.adv summary{cursor:pointer;font-weight:700;font-size:14px;padding:10px 0}
