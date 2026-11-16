@@ -147,6 +147,42 @@ code{font-family:"JetBrains Mono",monospace}
 footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
 .spark{width:100%;height:110px;display:block}
 
+/* Trade chart: theme-aware background (the old hardcoded #f8fafc rendered
+   as a big blank white box in dark mode) */
+#tradeSvg{background:var(--card2);border:1px solid var(--line);border-radius:12px;display:block}
+
+/* Creative polish — hero glow, gradient numbers, live pulse, spotlight,
+   status colors, card lift, mini curves. */
+.grad-text{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.hero-card{position:relative;overflow:hidden}
+.hero-card::before{content:"";position:absolute;inset:0;background:radial-gradient(420px 200px at 88% -10%,rgba(109,92,255,.22),transparent 60%),radial-gradient(360px 180px at 0% 112%,rgba(20,184,166,.16),transparent 60%);pointer-events:none}
+.hero-card>*{position:relative}
+.stat .num{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.pulse{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;vertical-align:1px;margin-right:2px;box-shadow:0 0 0 0 rgba(34,197,94,.5);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.spot{margin-top:18px;display:flex;gap:14px;align-items:center;justify-content:space-between;background:linear-gradient(90deg,rgba(109,92,255,.13),rgba(20,184,166,.13));border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.spot-info{min-width:0}
+.spot-info span{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;display:block}
+.spot-info b{font-size:17px;display:block;overflow-wrap:anywhere}
+.token{transition:transform .2s,box-shadow .2s}
+.token:hover{transform:translateY(-3px)}
+.mini-curve{width:100%;height:40px;display:block}
+.pill.st-live{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}
+.pill.st-migrate{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.pill.st-grad{background:#f5f3ff;color:#5b21b6;border-color:#ddd6fe}
+.pill.st-notlive{background:var(--bg2);color:var(--muted);border-color:var(--line)}
+@media(prefers-color-scheme:dark){
+  .pill.st-live{background:#052e22;color:#6ee7b7;border-color:#065f46}
+  .pill.st-migrate{background:#2a1a03;color:#fcd34d;border-color:#92400e}
+  .pill.st-grad{background:#1e1040;color:#c4b5fd;border-color:#4c1d95}
+}
+
+/* Loading skeletons for the token grid: shown until the first launch is
+   read from the chain, so the list never looks empty while loading. */
+.token.skeleton{pointer-events:none}
+.skel{border-radius:10px;background:linear-gradient(90deg,var(--bg2) 25%,var(--line) 50%,var(--bg2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite linear}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+
 .wallet-row{display:flex;gap:8px;flex-wrap:wrap}
 .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 #create,#tokens,#trade{scroll-margin-top:80px}

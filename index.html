@@ -4,8 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ammora Launchpad — GIWA Sepolia Testnet</title>
-  <script type="module" crossorigin src="./assets/index-kbAz3rv_.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/index-DDNPiYeC.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/index-CWicRzoZ.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BQlk4kX7.css">
 </head>
 <body>
 <div class="wrap">
@@ -18,7 +21,7 @@
   <div class="pills">
     <span class="pill">SDK <strong>@ammora-protocol/sdk 0.3.9</strong></span>
     <span class="pill">Chain <strong>91342</strong></span>
-    <span class="pill">Block <strong id="headBlock">—</strong></span>
+    <span class="pill"><i class="pulse"></i>Block <strong id="headBlock">—</strong></span>
   </div>
   <div class="wallet-row">
     <button class="btn btn-grad" id="walletBtn">Connect Wallet</button>
@@ -29,7 +32,7 @@
 <div class="hero">
   <div class="hero-card">
     <span class="badge">Testnet • Real SDK • No Simulation</span>
-    <h1>Launch your token on the bonding curve.</h1>
+    <h1>Launch your token on the <span class="grad-text">bonding curve.</span></h1>
     <p>Create a new token, watch its curve rise, then trade it and migrate to the AMM pool. Every transaction is real on GIWA Sepolia, priced from the latest on-chain state.</p>
     <div class="cta-row">
       <a class="btn btn-grad" href="#create">Create a Token</a>
@@ -43,7 +46,7 @@
       </div>
       <div class="stat">
         <span>Total Raised</span>
-        <div class="num" id="statRaised">—</div>
+        <div class="num" id="statRaised">loading…</div>
         <div class="note">Sum of quoteReserve across all active curves (WETH).</div>
       </div>
       <div class="stat">
@@ -51,6 +54,10 @@
         <div class="num" id="statTemplate" style="font-size:17px;line-height:1.4">—</div>
         <div class="note">Template #6 • Factory 0x3535…ab68fA</div>
       </div>
+    </div>
+    <div class="spot" id="heroSpot">
+      <div class="spot-info"><span>Top token right now</span><b id="spotName">Finding the top token…</b><div class="note" id="spotMeta">Reading the chain…</div></div>
+      <button class="btn btn-teal" id="spotTrade" type="button" style="display:none">Trade</button>
     </div>
   </div>
   <ol class="steps">
@@ -105,18 +112,23 @@
     </div>
   </div>
   <div style="margin:0 0 12px"><input id="tokenSearch" placeholder="Search tokens: name, symbol, or address…" autocomplete="off"></div>
-  <div id="tokenGrid" class="tokens"></div>
+  <p class="sub" id="tokenLoadStatus" style="margin:-2px 0 12px">Reading launches from the chain…</p>
+  <div id="tokenGrid" class="tokens">
+    <article class="token skeleton"><div class="skel" style="width:48px;height:48px;border-radius:14px"></div><div class="skel" style="height:18px;width:55%"></div><div class="skel" style="height:14px;width:90%"></div><div class="skel" style="height:14px;width:70%"></div><div class="skel" style="height:10px;width:100%"></div></article>
+    <article class="token skeleton"><div class="skel" style="width:48px;height:48px;border-radius:14px"></div><div class="skel" style="height:18px;width:60%"></div><div class="skel" style="height:14px;width:85%"></div><div class="skel" style="height:14px;width:65%"></div><div class="skel" style="height:10px;width:100%"></div></article>
+    <article class="token skeleton"><div class="skel" style="width:48px;height:48px;border-radius:14px"></div><div class="skel" style="height:18px;width:50%"></div><div class="skel" style="height:14px;width:88%"></div><div class="skel" style="height:14px;width:72%"></div><div class="skel" style="height:10px;width:100%"></div></article>
+  </div>
 </section>
 
 <section class="card" id="trade" style="margin-top:18px">
   <h2 id="tradeTitle">Trade</h2>
   <p class="sub" id="tradeSub">Pick a token from the list above.</p>
-  <svg id="tradeSvg" viewBox="0 0 520 110" width="100%" height="110" style="background:#f8fafc;border-radius:12px"></svg>
-  <div class="kv"><span>Price (estimate)</span><b id="tradePrice">—</b></div>
-  <div class="kv"><span>Progress</span><b id="tradeProgress">—</b></div>
-  <div class="kv"><span>Raised</span><b id="tradeRaised">—</b></div>
+  <svg id="tradeSvg" viewBox="0 0 520 110" width="100%" height="110"></svg>
+  <div class="kv"><span>Price (estimate)</span><b id="tradePrice">Pick a token to see the price</b></div>
+  <div class="kv"><span>Progress</span><b id="tradeProgress">Pick a token</b></div>
+  <div class="kv"><span>Raised</span><b id="tradeRaised">Pick a token</b></div>
   <div class="progress"><i id="tradeBar"></i></div>
-  <div class="kv"><span>Your balance</span><b id="tradeBalance">—</b></div>
+  <div class="kv"><span>Your balance</span><b id="tradeBalance">Connect your wallet to see your balance.</b></div>
   <div class="form" style="margin-top:14px">
     <div class="field" style="grid-column:1/-1">
       <label>Action</label>

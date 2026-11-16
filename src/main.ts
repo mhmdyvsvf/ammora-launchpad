@@ -49,7 +49,7 @@ function renderActivity() {
   const list = loadActivity();
   ul.innerHTML = list.length
     ? list.map((a) => `<li><span>${a.time} — ${a.text}</span>${a.hash ? ` <a href="${explorerTx(a.hash)}" target="_blank" rel="noopener">${shortAddr(a.hash)}</a>` : ""}</li>`).join("")
-    : `<li><span>No on-chain activity from this launchpad yet.</span></li>`;
+    : `<li><span>No activity in this browser yet. Creates, buys, and sells from this page will appear here.</span></li>`;
 }
 
 let client: PublicClient;
@@ -59,6 +59,7 @@ let head = 0n;
 let templateDecimals = 9;
 let launches: LaunchSummary[] = [];
 let selected: LaunchSummary | null = null;
+let topToken: LaunchSummary | null = null;
 let tradeSide: "buy" | "sell" = "buy";
 let filter: "all" | "live" | "migrate" | "graduated" = "all";
 let query = "";
@@ -66,6 +67,10 @@ let balances = { eth: 0n, weth: 0n, tokenBalance: 0n };
 
 function statusLabel(s: number) {
   return s === 0 ? "Not live" : s === 1 ? "On curve" : s === 2 ? "Ready to migrate" : s === 3 ? "Graduated" : `Status ${s}`;
+}
+
+function statusPillClass(s: number) {
+  return s === 1 ? "st-live" : s === 2 ? "st-migrate" : s === 3 ? "st-grad" : "st-notlive";
 }
 
 function curveSvg(progress: number): string {
@@ -77,7 +82,47 @@ function curveSvg(progress: number): string {
   }
   const mx = Math.min(1, Math.max(0, progress)) * 520;
   const my = 100 - (Math.pow(Math.min(1, Math.max(0, progress)), 2) * 88 + 6);
-  return `<polyline points="${pts.join(" ")}" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6d5cff"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs><circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="6" fill="#0d9488" stroke="#fff" stroke-width="2"/>`;
+  const area = `M0,100 L${pts.join(" L")} L520,100 Z`;
+  const grid = [25, 50, 75].map((y) => `<line x1="0" y1="${y}" x2="520" y2="${y}" style="stroke:var(--line)" stroke-width="1"/>`).join("");
+  return `${grid}<path d="${area}" fill="url(#gf)"/><polyline points="${pts.join(" ")}" fill="none" stroke="url(#g)" stroke-width="3" stroke-linejoin="round"/><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6d5cff"/><stop offset="1" stop-color="#14b8a6"/></linearGradient><linearGradient id="gf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6d5cff" stop-opacity="0.28"/><stop offset="1" stop-color="#14b8a6" stop-opacity="0.02"/></linearGradient></defs><circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="6" fill="#0d9488" stroke="#fff" stroke-width="2"/>`;
+}
+
+// Small bonding-curve sparkline drawn on every token card.
+function miniCurveSvg(progress: number, gid: string): string {
+  const pts: string[] = [];
+  for (let i = 0; i <= 20; i++) {
+    const x = (i / 20) * 200;
+    const y = 36 - (Math.pow(i / 20, 2) * 30 + 3);
+    pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  const p = Math.min(1, Math.max(0, progress));
+  const mx = p * 200;
+  const my = 36 - (Math.pow(p, 2) * 30 + 3);
+  return `<svg class="mini-curve" viewBox="0 0 200 40" aria-hidden="true"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#6d5cff"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs><polyline points="${pts.join(" ")}" fill="none" stroke="url(#${gid})" stroke-width="2.5" stroke-linejoin="round"/><circle cx="${mx.toFixed(1)}" cy="${my.toFixed(1)}" r="3.5" fill="#0d9488" stroke="#fff" stroke-width="1.5"/></svg>`;
+}
+
+// Placeholder curve shown in the Trade panel before any token is picked:
+// a faint dashed curve plus a label, so the panel never looks like a
+// blank white box. The old hardcoded #f8fafc background did not adapt to
+// dark mode and rendered as a big empty white rectangle.
+function placeholderCurveSvg(): string {
+  const pts: string[] = [];
+  for (let i = 0; i <= 20; i++) {
+    const x = (i / 20) * 520;
+    const y = 100 - (Math.pow(i / 20, 2) * 88 + 6);
+    pts.push(`${x.toFixed(1)},${y.toFixed(1)}`);
+  }
+  return `<polyline points="${pts.join(" ")}" fill="none" stroke="#64748b" stroke-width="3" stroke-linejoin="round" stroke-dasharray="1 7" stroke-linecap="round" opacity="0.55"/><text x="260" y="56" text-anchor="middle" fill="#94a3b8" font-size="14" font-weight="600">Pick a token above to see its bonding curve</text>`;
+}
+
+// Hero spotlight: the highest-raised live token, updated as launches stream in.
+function updateSpot() {
+  const top = launches[0] ?? null;
+  topToken = top;
+  if (!top) return;
+  $("spotName").textContent = `${top.name} (${top.symbol})`;
+  $("spotMeta").textContent = `Raised ${fmt(top.quoteReserve, 18, 4)} WETH • ${statusLabel(top.status)}`;
+  ($("spotTrade") as HTMLButtonElement).style.display = "";
 }
 
 async function refreshHead() {
@@ -88,7 +133,10 @@ async function refreshHead() {
 async function init() {
   renderActivity();
   client = getPublicClient();
-  $("statTokens").textContent = "...";
+  $("tradeSvg").innerHTML = placeholderCurveSvg();
+  $("statTokens").textContent = "loading…";
+  $("statRaised").textContent = "loading…";
+  const statusEl = $("tokenLoadStatus");
   try {
     await refreshHead();
     await verifyCore(client, head);
@@ -96,21 +144,44 @@ async function init() {
     templateDecimals = Number(template.config.tokenDecimals ?? 9);
     const nextId = await getNextConfigId(client, head);
     $("statTemplate").textContent = template.enabled ? `Template #6 active • ${nextId - 1n} configs registered` : "Template #6 inactive";
-    $("statTokens").textContent = "loading...";
-    const found = await listLaunches(client, head, (done, total) => {
-      $("statTokens").textContent = `loading ${done}/${total}...`;
-    });
-    launches = found;
+    // Incremental render: each token appears in the grid as soon as its
+    // on-chain data is read, with a running raised total — the page is
+    // never a blank list for the whole ~2 min load.
+    const onLaunch = (l: LaunchSummary) => {
+      if (launches.some((x) => x.curve === l.curve)) return;
+      launches.push(l);
+      launches.sort((a, b) => Number(b.quoteReserve - a.quoteReserve));
+      $("statTokens").textContent = String(launches.length);
+      const raised = launches.reduce((a, x) => a + x.quoteReserve, 0n);
+      $("statRaised").textContent = `${fmt(raised, 18, 4)} WETH`;
+      renderTokens();
+      updateSpot();
+    };
+    const found = await listLaunches(client, head, (done, total, phase) => {
+      if (phase === "scan") {
+        statusEl.textContent = `Scanning the chain for launches… ${done} found so far`;
+        $("statTokens").textContent = "loading…";
+      } else {
+        statusEl.textContent = `Reading token details… ${done}/${total}`;
+        $("statTokens").textContent = String(done);
+      }
+    }, onLaunch);
+    if (!launches.length) launches = found;
     $("statTokens").textContent = String(found.length);
     const raised = found.reduce((a, l) => a + l.quoteReserve, 0n);
     $("statRaised").textContent = `${fmt(raised, 18, 4)} WETH`;
+    statusEl.textContent = found.length
+      ? `${found.length} live tokens • read from the chain, highest raised first`
+      : "No launches found on-chain yet. Create the first token above.";
     renderTokens();
+    updateSpot();
     if (found.length) selectLaunch(found[0]!);
     toast("Connected to GIWA Sepolia. Launch list read straight from the chain.");
   } catch (e) {
     console.error(e);
     toast(`Failed to read the chain: ${(e as Error).message.slice(0, 120)}`);
     $("statTokens").textContent = "failed";
+    statusEl.textContent = "Could not read the launch list. Check your connection and refresh the page.";
   }
 }
 
@@ -132,12 +203,13 @@ function renderTokens() {
     const progress = l.migrationQuoteThreshold > 0n ? Number((l.quoteReserve * 10000n) / l.migrationQuoteThreshold) / 100 : 0;
     const pct = Math.min(100, progress);
     return `<article class="token ${selected?.curve === l.curve ? "selected" : ""}" data-curve="${l.curve}">
-      <div class="token-head"><div class="token-top"><div class="avatar" style="background:${avatarBg(l.token)}">${escapeHtml((l.symbol || l.name || "?").charAt(0).toUpperCase())}</div><div><h3>${escapeHtml(l.name)}</h3><span class="sym">${escapeHtml(l.symbol)}</span></div></div><span class="pill">${statusLabel(l.status)}</span></div>
+      <div class="token-head"><div class="token-top"><div class="avatar" style="background:${avatarBg(l.token)}">${escapeHtml((l.symbol || l.name || "?").charAt(0).toUpperCase())}</div><div><h3>${escapeHtml(l.name)}</h3><span class="sym">${escapeHtml(l.symbol)}</span></div></div><span class="pill ${statusPillClass(l.status)}">${statusLabel(l.status)}</span></div>
       <div class="kv"><span>Token</span><b class="mono"><a href="${explorerToken(l.token)}" target="_blank" rel="noopener">${shortAddr(l.token)}</a></b></div>
       <div class="kv"><span>Curve</span><b class="mono"><a href="${explorerAddress(l.curve)}" target="_blank" rel="noopener">${shortAddr(l.curve)}</a></b></div>
       <div class="kv"><span>Creator</span><b class="mono">${shortAddr(l.creator)}</b></div>
       <div class="kv"><span>Raised</span><b>${fmt(l.quoteReserve, 18, 4)} / ${fmt(l.migrationQuoteThreshold, 18, 4)} WETH</b></div>
       <div class="progress"><i style="width:${pct.toFixed(1)}%"></i></div>
+      ${miniCurveSvg(pct / 100, `mg${l.curve.slice(2, 8)}`)}
       <div style="display:flex;gap:8px;margin-top:12px">
         <button class="btn btn-teal" data-trade="${l.curve}" style="flex:1">Trade</button>
         <button class="btn btn-outline" data-detail="${l.curve}" style="flex:1">Detail</button>
@@ -337,6 +409,7 @@ async function reloadLaunches() {
   launches = await listLaunches(client, head);
   $("statTokens").textContent = String(launches.length);
   renderTokens();
+  updateSpot();
 }
 
 async function onTrade() {
@@ -462,6 +535,12 @@ function wire() {
   $("tokenSearch").addEventListener("input", () => {
     query = ($input("tokenSearch").value ?? "").trim().toLowerCase();
     renderTokens();
+  });
+
+  $("spotTrade").addEventListener("click", () => {
+    if (!topToken) return;
+    void selectLaunch(topToken);
+    document.getElementById("trade")?.scrollIntoView({ behavior: "smooth" });
   });
 
   $("createForm").addEventListener("submit", (e) => { e.preventDefault(); void onCreateSubmit(e as SubmitEvent); });

@@ -185,7 +185,7 @@ async function enrichLaunch(client: PublicClient, head: bigint, base: { token: A
   }
 }
 
-async function enrichMany(head: bigint, bases: Array<{ token: Address; curve: Address; creator: Address; configId: bigint; metadataURI: string; statusHint?: number }>, cap: number): Promise<LaunchSummary[]> {
+async function enrichMany(head: bigint, bases: Array<{ token: Address; curve: Address; creator: Address; configId: bigint; metadataURI: string; statusHint?: number }>, cap: number, onProgress?: (done: number, total: number, phase: "enrich") => void, onLaunch?: (l: LaunchSummary) => void): Promise<LaunchSummary[]> {
   const out: LaunchSummary[] = [];
   const queue = bases.slice(0, cap);
   let i = 0;
@@ -197,7 +197,13 @@ async function enrichMany(head: bigint, bases: Array<{ token: Address; curve: Ad
     while (i < queue.length) {
       const item = queue[i++]!;
       const enriched = await enrichLaunch(workerClient, head, item);
-      if (enriched) out.push(enriched);
+      if (enriched) {
+        out.push(enriched);
+        // Incremental render: the UI shows each token as soon as its data
+        // is read, instead of a blank list for the whole ~2 min load.
+        onProgress?.(out.length, queue.length, "enrich");
+        onLaunch?.(enriched);
+      }
     }
   });
   await Promise.all(workers);
@@ -206,7 +212,8 @@ async function enrichMany(head: bigint, bases: Array<{ token: Address; curve: Ad
 
 export async function listLaunches(
   _client: PublicClient, head: bigint,
-  onProgress?: (done: number, total: number) => void,
+  onProgress?: (done: number, total: number, phase: "scan" | "enrich") => void,
+  onLaunch?: (l: LaunchSummary) => void,
 ): Promise<LaunchSummary[]> {
   // Path 1: Ammora Data API (SDK client). It is down (503) as of 2026-11-16,
   // so this usually falls through to the on-chain scan below. The fetch has
@@ -232,9 +239,8 @@ export async function listLaunches(
         creator: getAddress(it.creatorAddress), configId: BigInt(it.configId),
         metadataURI: it.metadataUri ?? "", statusHint: statusMap[it.status] ?? 0,
       }));
-      onProgress?.(0, bases.length);
-      const enriched = await enrichMany(head, bases, 24);
-      onProgress?.(enriched.length, bases.length);
+      onProgress?.(0, bases.length, "enrich");
+      const enriched = await enrichMany(head, bases, 24, onProgress, onLaunch);
       if (enriched.length) return enriched.sort((a, b) => Number(b.quoteReserve - a.quoteReserve));
     }
     } finally {
@@ -271,11 +277,16 @@ export async function listLaunches(
           configId: a.configId ?? 0n, metadataURI: a.metadataURI ?? "",
         });
       }
-      onProgress?.(found.size, found.size);
+      // Scan phase: total is unknown while scanning, so report the phase
+      // explicitly. Reporting (found, found) here used to render as
+      // "loading 18/18..." — looking finished while enrichment had not
+      // even started.
+      onProgress?.(found.size, 0, "scan");
     }
   }));
   const bases = [...found.values()].sort((a, b) => Number(b.configId - a.configId));
-  return enrichMany(head, bases, 24);
+  onProgress?.(0, bases.length, "enrich");
+  return enrichMany(head, bases, 24, onProgress, onLaunch);
 }
 
 export async function getCurveQuote(
