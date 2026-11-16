@@ -146,3 +146,5 @@ code{font-family:"JetBrains Mono",monospace}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
 .spark{width:100%;height:110px;display:block}
+
+.wallet-row{display:flex;gap:8px;flex-wrap:wrap}

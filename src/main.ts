@@ -429,6 +429,7 @@ function wire() {
       wallet = getWalletClient(account);
       btn.textContent = `● ${shortAddr(account)}`;
       btn.disabled = false;
+      ($("disconnectBtn") as HTMLButtonElement).style.display = "";
       toast(`Wallet terhubung: ${shortAddr(account)} (GIWA Sepolia)`);
       await refreshBalances();
     } catch (e) {
@@ -436,6 +437,16 @@ function wire() {
       ($("walletBtn") as HTMLButtonElement).disabled = false;
       ($("walletBtn") as HTMLButtonElement).textContent = "Hubungkan Wallet";
     }
+  });
+
+  $("disconnectBtn").addEventListener("click", () => {
+    account = null;
+    wallet = null;
+    balances = { eth: 0n, weth: 0n, tokenBalance: 0n };
+    ($("walletBtn") as HTMLButtonElement).textContent = "Hubungkan Wallet";
+    ($("disconnectBtn") as HTMLButtonElement).style.display = "none";
+    void refreshBalances();
+    toast("Wallet diputuskan dari halaman ini. Kalau di aplikasi wallet masih tertulis terhubung, putuskan juga dari menu situs terhubung di wallet.");
   });
 
   document.querySelectorAll(".tab").forEach((t) =>
