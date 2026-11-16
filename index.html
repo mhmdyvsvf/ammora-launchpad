@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<title>Ammora Launchpad — Buat Token + Bonding Curve</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7f9; --bg2:#eef1f4; --card:#ffffff; --card2:#f8fafc; --line:#e2e8f0;
+  --text:#0f172a; --muted:#64748b; --muted2:#94a3b8;
+  --teal:#0d9488; --teal2:#14b8a6; --violet:#6d5cff; --amber:#d97706; --red:#dc2626; --green:#059669;
+  --grad:linear-gradient(90deg,#6d5cff,#14b8a6);
+  --shadow:0 10px 30px rgba(15,23,42,.08);
+  --radius:18px;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0a0e14; --bg2:#0d1219; --card:#121922; --card2:#171f2b; --line:#232f42; --text:#e6edf7; --muted:#94a3b8; --muted2:#64748b; --shadow:0 12px 32px rgba(0,0,0,.35); }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"Plus Jakarta Sans",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.55}
+a{color:var(--teal);text-decoration:none}
+button,input,select,textarea{font:inherit;min-height:44px}
+button{cursor:pointer}
+.mono{font-family:"JetBrains Mono",monospace}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 48px}
+
+/* Top bar */
+.topbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:12px 0 18px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--grad);display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.brand b{font-size:19px;letter-spacing:-.02em}
+.brand span{display:block;font-size:12.5px;color:var(--muted);font-weight:500;line-height:1.2}
+.pills{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{font-size:12px;font-weight:700;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--muted)}
+.pill strong{color:var(--text)}
+.btn{border:0;border-radius:999px;padding:0 18px;font-weight:700;display:inline-flex;align-items:center;gap:8px;justify-content:center}
+.btn-primary{background:var(--text);color:var(--bg)}
+.btn-grad{background:var(--grad);color:#fff}
+.btn-outline{background:var(--card);border:1px solid var(--line);color:var(--text)}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* Hero */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;margin-top:20px}
+@media(max-width:860px){.hero{grid-template-columns:1fr}}
+.hero-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:var(--shadow)}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--grad);color:#fff;font-size:12px;font-weight:800;letter-spacing:.02em;padding:7px 11px;border-radius:999px;text-transform:uppercase}
+.hero h1{font-size:38px;line-height:1.05;letter-spacing:-.03em;margin:16px 0 12px}
+@media(max-width:560px){.hero h1{font-size:30px}}
+.hero p{color:var(--muted);margin:0 0 16px;font-size:15.5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.stat{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{font-size:17px;display:block}
+.stat span{font-size:12px;color:var(--muted);font-weight:600}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.steps li{display:flex;gap:12px;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px}
+.num{width:32px;height:32px;flex:0 0 32px;border-radius:50%;background:var(--text);color:var(--bg);display:grid;place-items:center;font-weight:800;font-size:14px}
+.steps b{display:block;font-size:14.5px}
+.steps p{margin:2px 0 0;color:var(--muted);font-size:13.5px}
+
+/* Layout */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 6px;font-size:20px;letter-spacing:-.02em}
+.card h3{margin:0 0 8px;font-size:16px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+label{font-size:13px;font-weight:700;display:block;margin:14px 0 6px}
+label:first-of-type{margin-top:0}
+input,textarea,select{width:100%;border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:12px;padding:11px 12px;outline:none}
+input:focus,textarea:focus{border-color:var(--teal2);box-shadow:0 0 0 3px rgba(20,184,166,.18)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
+.hint{font-size:12.5px;color:var(--muted);margin-top:6px}
+.progress{height:10px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--grad);border-radius:999px;transition:width .4s}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+.kv:last-child{border-bottom:0}
+.kv span{color:var(--muted)} .kv b{text-align:right}
+
+/* Token list */
+.section-head{display:flex;flex-wrap:wrap;gap:12px;align-items:end;justify-content:space-between;margin:28px 0 14px}
+.section-head h2{margin:0;font-size:22px;letter-spacing:-.02em}
+.section-head p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tab{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:0 14px;font-weight:700;font-size:13.5px}
+.tab.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tokens{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:980px){.tokens{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.tokens{grid-template-columns:1fr}}
+.token{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.token-top{display:flex;gap:12px;align-items:center}
+.avatar{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;flex:0 0 48px}
+.token h3{margin:0;font-size:16px;line-height:1.2}
+.token .sym{color:var(--muted);font-size:12.5px;font-weight:700}
+.token .desc{color:var(--muted);font-size:13.5px;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.token-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.token-meta div{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:9px 10px}
+.token-meta span{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;display:block}
+.token-meta b{font-size:14px}
+.tag{font-size:11px;font-weight:800;padding:5px 8px;border-radius:999px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+@media(prefers-color-scheme:dark){.tag{background:#052e22;color:#6ee7b7;border-color:#065f46}}
+.tag.demo{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
+@media(prefers-color-scheme:dark){.tag.demo{background:#2a1503;color:#fdba74;border-color:#7c2d12}}
+
+/* Trade */
+.trade-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+@media(max-width:900px){.trade-grid{grid-template-columns:1fr}}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:var(--bg2);border:1px solid var(--line);padding:6px;border-radius:999px;margin-bottom:14px}
+.seg button{border:0;border-radius:999px;background:transparent;font-weight:800}
+.seg button.active-buy{background:var(--teal);color:#fff}
+.seg button.active-sell{background:var(--red);color:#fff}
+.quick{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.quick button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:999px;font-weight:700;font-size:13px;min-height:36px}
+.txlist{list-style:none;margin:0;padding:0;display:grid;gap:8px;max-height:260px;overflow:auto}
+.txlist li{display:flex;justify-content:space-between;gap:10px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.empty{border:1px dashed var(--line);border-radius:14px;padding:18px;text-align:center;color:var(--muted);font-size:14px;background:var(--card2)}
+
+/* Code */
+pre{background:#0b1220;color:#dbeafe;border-radius:16px;padding:18px;overflow:auto;font-family:"JetBrains Mono",monospace;font-size:12.8px;line-height:1.65;white-space:pre}
+code{font-family:"JetBrains Mono",monospace}
+.inline-code{background:var(--bg2);border:1px solid var(--line);padding:2px 6px;border-radius:6px;font-size:.92em}
+.checklist{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.checklist li{display:flex;gap:10px;align-items:flex-start;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:14px}
+.check{width:22px;height:22px;flex:0 0 22px;border-radius:50%;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:800;margin-top:1px}
+.notice{border:1px solid #f59e0b;background:#fffbeb;color:#92400e;border-radius:14px;padding:14px 16px;font-size:14px}
+@media(prefers-color-scheme:dark){.notice{background:#2a1a03;color:#fcd34d;border-color:#92400e}}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:18px;background:var(--text);color:var(--bg);padding:12px 16px;border-radius:999px;font-weight:700;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:92vw;text-align:center;box-shadow:var(--shadow)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:13px;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}
+.spark{width:100%;height:110px;display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">A</div>
+      <div><b>Ammora Launchpad</b><span>Buat token baru + bonding curve • GIWA Sepolia</span></div>
+    </div>
+    <div class="pills">
+      <span class="pill">Network <strong>GIWA Sepolia</strong></span>
+      <span class="pill">Chain ID <strong>91342</strong></span>
+      <span class="pill">SDK <strong>@ammora-protocol/sdk v0.3.9</strong></span>
+      <button class="btn btn-primary" id="walletBtn" style="min-height:42px">Hubungkan Wallet</button>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="hero-card">
+      <span class="badge">&lt;/&gt; Builder Mission — Prototype Launchpad</span>
+      <h1>Luncurkan token di bonding curve, lalu graduate ke pool AMM.</h1>
+      <p>Ini <b>prototype interaktif</b> launchpad pilihan <b>nomor 1</b>: buat token baru, tetapkan suplai &amp; kurva, token bisa dibeli / dijual di kurva, dan graduate ke pool AMM saat kurva penuh. Alur &amp; hitungan kurvanya nyata sebagai simulasi lokal — <b>belum terhubung on-chain</b>, jadi belum memenuhi misi sampai di-wiring ke SDK Ammora beneran (langkahnya ada di bawah).</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="#create" class="btn btn-grad" style="text-decoration:none;min-height:46px;padding:0 18px;display:inline-flex;align-items:center">＋ Buat Token</a>
+        <a href="#tokens" class="btn btn-outline" style="text-decoration:none;min-height:46px;padding:0 18px;display:inline-flex;align-items:center">Lihat Token Live</a>
+        <a href="#submit" class="btn btn-ghost" style="text-decoration:none;min-height:46px;padding:0 18px;display:inline-flex;align-items:center">Cara Submit Misi →</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><b id="statTokens">3</b><span>Token di launchpad</span></div>
+        <div class="stat"><b id="statRaised">0.00 ETH</b><span>Total terkumpul (demo)</span></div>
+        <div class="stat"><b>800 jt / 1 M</b><span>Suplai kurva / total per token</span></div>
+      </div>
+    </div>
+    <div class="hero-card">
+      <h2 style="margin:0 0 12px;font-size:18px">Cara kerjanya — 3 langkah misi</h2>
+      <ol class="steps">
+        <li><span class="num">1</span><div><b>Build dengan SDK</b><p>Install <span class="inline-code">@ammora-protocol/sdk</span> + viem, buat Config, lalu buat token dengan bonding curve. Halaman ini adalah prototype tampilannya — wiring on-chain-nya masih harus dikerjakan di proyek terpisah mengikuti README SDK.</p></div></li>
+        <li><span class="num">2</span><div><b>Posting di X</b><p>Setelah versi on-chain online, screenshot / rekam launchpad kamu dan posting dengan menyebut build Ammora SDK. Tombol draft post ada di bagian Submit di bawah.</p></div></li>
+        <li><span class="num">3</span><div><b>Submit link untuk review</b><p>Isi Project name, Website link, dan X post link di <a href="https://ammora.org/waitlist#mission" target="_blank" rel="noopener">ammora.org/waitlist#mission</a>. Hadiah: undian $tAMM + SBT.</p></div></li>
+      </ol>
+      <div class="notice" style="margin-top:14px"><b>Testnet saja.</b> SDK Ammora masih beta &amp; belum diaudit. Jangan pakai dana mainnet / uang asli di kontrak ini.</div>
+    </div>
+  </section>
+
+  <!-- CREATE + CURVE -->
+  <div class="grid2" id="create">
+    <section class="card">
+      <h2>Buat token baru</h2>
+      <p class="sub">Mensimulasikan langkah pembuatan token di SDK. Token langsung muncul di daftar prototype dan bisa diperdagangkan di kurva simulasinya.</p>
+      <form id="createForm">
+        <label for="tName">Nama token</label>
+        <input id="tName" required maxlength="32" placeholder="cth. Giwa Cat" value="Giwa Cat">
+        <div class="row">
+          <div>
+            <label for="tSymbol">Simbol</label>
+            <input id="tSymbol" required maxlength="10" placeholder="GCAT" value="GCAT" style="text-transform:uppercase">
+          </div>
+          <div>
+            <label for="tCurve">Target kurva (ETH testnet)</label>
+            <select id="tCurve">
+              <option value="12">12 ETH — standar</option>
+              <option value="6">6 ETH — cepat graduate</option>
+              <option value="25">25 ETH — besar</option>
+            </select>
+          </div>
+        </div>
+        <label for="tDesc">Deskripsi</label>
+        <textarea id="tDesc" rows="3" maxlength="180" placeholder="Ceritakan token ini singkat...">Token komunitas pertama yang diluncurkan dari launchpad ini di GIWA Sepolia.</textarea>
+        <label for="tColor">Warna identitas</label>
+        <select id="tColor">
+          <option value="#6d5cff,#14b8a6">Ungu → Teal (Ammora)</option>
+          <option value="#f59e0b,#ef4444">Amber → Merah</option>
+          <option value="#0ea5e9,#22c55e">Biru → Hijau</option>
+          <option value="#ec4899,#8b5cf6">Pink → Ungu</option>
+          <option value="#111827,#374151">Hitam → Abu</option>
+        </select>
+        <button class="btn btn-grad" type="submit" style="width:100%;margin-top:18px">🚀 Luncurkan Token di Bonding Curve</button>
+        <p class="hint">Di versi on-chain, tombol ini memanggil kontrak factory Ammora di GIWA Sepolia dan membutuhkan wallet + gas testnet. Di halaman demo ini, peluncuran disimulasikan lokal agar alurnya bisa diuji &amp; di-screenshot untuk misi.</p>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Preview bonding curve</h2>
+      <p class="sub">Harga naik seiring token terjual. Kurva memakai cadangan virtual ala pump-style: <span class="inline-code">harga = vETH / vToken</span>.</p>
+      <svg class="spark" id="curveSvg" viewBox="0 0 520 110" preserveAspectRatio="none" aria-label="Grafik bonding curve"></svg>
+      <div class="kv"><span>Harga awal</span><b class="mono" id="pStart">—</b></div>
+      <div class="kv"><span>Harga saat graduate</span><b class="mono" id="pEnd">—</b></div>
+      <div class="kv"><span>Suplai dijual di kurva</span><b>800.000.000 token (80%)</b></div>
+      <div class="kv"><span>Sisa untuk pool AMM</span><b>200.000.000 token (20%)</b></div>
+      <div class="kv"><span>Syarat graduate</span><b id="gradTarget">Terkumpul 12 ETH di kurva</b></div>
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span>Simulasi progress kurva</span><span id="simPct">18%</span></div>
+        <input type="range" id="simRange" min="0" max="100" value="18" style="padding:0;min-height:36px">
+        <div class="progress"><i id="simBar" style="width:18%"></i></div>
+        <p class="hint" id="simText">Geser untuk melihat harga &amp; status graduate pada titik kurva yang berbeda.</p>
+      </div>
+    </section>
+  </div>
+
+  <!-- TOKENS -->
+  <div class="section-head" id="tokens">
+    <div><h2>Token di launchpad</h2><p>Klik “Trade” untuk beli / jual di bonding curve token tersebut. Token bertanda DEMO adalah contoh tampilan.</p></div>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-filter="all">Semua</button>
+      <button class="tab" data-filter="live">Sedang di kurva</button>
+      <button class="tab" data-filter="graduated">Sudah graduate</button>
+    </div>
+  </div>
+  <div class="tokens" id="tokenGrid"></div>
+
+  <!-- TRADE -->
+  <section class="card" style="margin-top:18px" id="trade">
+    <div class="trade-grid">
+      <div>
+        <h2 id="tradeTitle">Trade — Giwa Cat (GCAT)</h2>
+        <p class="sub" id="tradeSub">Beli sebelum graduate untuk dapat harga kurva. Jual kembali kapan saja ke kurva yang sama.</p>
+        <svg class="spark" id="tradeSvg" viewBox="0 0 520 110" preserveAspectRatio="none"></svg>
+        <div class="kv"><span>Harga sekarang</span><b class="mono" id="tradePrice">—</b></div>
+        <div class="kv"><span>Progress kurva</span><b id="tradeProgress">—</b></div>
+        <div class="kv"><span>Terkumpul</span><b id="tradeRaised">—</b></div>
+        <div class="kv"><span>Saldo kamu (simulasi)</span><b id="tradeBalance">10.00 ETH testnet • 0 token</b></div>
+        <div style="margin-top:10px"><div class="progress"><i id="tradeBar" style="width:0%"></i></div></div>
+      </div>
+      <div>
+        <div class="seg">
+          <button id="buyTab" class="active-buy" type="button">Beli</button>
+          <button id="sellTab" type="button">Jual</button>
+        </div>
+        <label id="amountLabel" for="amount">Jumlah ETH</label>
+        <input id="amount" type="number" min="0" step="0.01" value="0.50" inputmode="decimal">
+        <div class="quick">
+          <button type="button" data-q="0.1">0.1</button><button type="button" data-q="0.5">0.5</button><button type="button" data-q="1">1.0</button><button type="button" data-q="2">2.0</button>
+        </div>
+        <div class="kv" style="margin-top:12px"><span>Kamu menerima (estimasi)</span><b class="mono" id="receiveEst">—</b></div>
+        <div class="kv"><span>Slippage / fee kurva</span><b>1% (simulasi)</b></div>
+        <button class="btn btn-teal" id="tradeBtn" style="width:100%;margin-top:14px">Beli Token</button>
+        <p class="hint">Ini perdagangan simulasi lokal untuk mencoba alur prototype. Untuk on-chain, aksi beli / jual ini harus diganti panggilan kurva dari SDK — ilustrasi alurnya ada di pseudocode di bawah.</p>
+        <h3 style="margin-top:18px">Aktivitas terakhir</h3>
+        <ul class="txlist" id="txList"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SDK CODE -->
+  <div class="grid2">
+    <section class="card">
+      <h2>Ilustrasi alur SDK — pseudocode</h2>
+      <p class="sub">Ini <b>pseudocode ilustrasi alur</b>, bukan kode siap deploy: nama method di bawah belum terverifikasi terhadap README / types paket <span class="inline-code">@ammora-protocol/sdk</span> v0.3.9. Gunakan hanya sebagai peta langkah, lalu samakan setiap signature dengan dokumentasi resmi paket sebelum menulis versi on-chain di proyek Next.js / Vite.</p>
+      <pre id="codeBlock">npm i @ammora-protocol/sdk viem
+
+// 1) Setup — GIWA Sepolia (chain 91342)
+import { createConfig, Launchpad } from "@ammora-protocol/sdk";
+import { createWalletClient, custom } from "viem";
+
+const config = createConfig({ chainId: 91342 });
+const launchpad = new Launchpad(config);
+
+// 2) Buat token + bonding curve
+const token = await launchpad.createToken({
+  name: "Giwa Cat",
+  symbol: "GCAT",
+  totalSupply: 1_000_000_000n,
+  curveSupply: 800_000_000n, // 80% dijual di kurva
+});
+
+// 3) Beli / jual di kurva
+await token.curve.buy({ amountIn: "0.5" });  // ETH -&gt; token
+await token.curve.sell({ amountIn: "10000" }); // token -&gt; ETH
+
+// 4) Graduate otomatis ke pool AMM
+// saat ETH terkumpul mencapai target kurva,
+// sisa suplai + ETH dipindah ke pool AMM Ammora.</pre>
+      <button class="btn btn-outline" id="copyCode" style="width:100%">Salin Pseudocode</button>
+      <p class="hint">Jangan deploy potongan ini apa adanya — verifikasi dulu setiap method &amp; parameter di README paket @ammora-protocol/sdk, dan selalu testnet dulu.</p>
+    </section>
+
+    <section class="card" id="submit">
+      <h2>Submit Builder Mission</h2>
+      <p class="sub">Helper persiapan submit — misi baru terpenuhi setelah versi on-chain launchpad ini online &amp; sudah posting di X. Gunakan helper ini untuk menyiapkan isinya.</p>
+      <ul class="checklist">
+        <li><span class="check">1</span><span><b>Prototype selesai, on-chain belum</b> — halaman ini adalah prototype tampilannya. Kerjakan wiring SDK-nya dulu (ikuti README resmi SDK), deploy versi on-chain, baru screenshot versi itu untuk postingan X.</span></li>
+        <li><span class="check">2</span><span><b>Posting di X</b> — pakai draft di bawah, lampirkan screenshot versi on-chain, lalu salin link postinganmu.</span></li>
+        <li><span class="check">3</span><span><b>Submit di Ammora</b> — buka form resmi dan tempel ketiga field di bawah.</span></li>
+      </ul>
+      <label for="projName">Project name</label>
+      <input id="projName" value="Ammora Launchpad — Giwa Cat">
+      <label for="webLink">Website link</label>
+      <input id="webLink" placeholder="Tempel link website launchpad kamu di sini setelah online">
+      <label for="xLink">X post link</label>
+      <input id="xLink" placeholder="https://x.com/kamu/status/...">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+        <a class="btn btn-grad" id="xDraft" href="#" target="_blank" rel="noopener" style="text-decoration:none">Draft Postingan X ↗</a>
+        <a class="btn btn-primary" href="https://ammora.org/waitlist#mission" target="_blank" rel="noopener" style="text-decoration:none">Buka Form Ammora ↗</a>
+      </div>
+      <p class="hint">Akun X Boss: <b>@mhmdyvsvf87</b>. Hadiah misi: undian <b>$tAMM + SBT</b> — $tAMM testnet direncanakan konversi ke $AMM mainnet.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+        <a href="https://www.npmjs.com/package/@ammora-protocol/sdk" target="_blank" rel="noopener" style="font-weight:700;font-size:14px">Paket SDK di npm ↗</a>
+        <a href="https://ammora.org/waitlist#mission" target="_blank" rel="noopener" style="font-weight:700;font-size:14px">Halaman Misi Ammora ↗</a>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <span>Ammora Launchpad • Dibangun untuk Builder Mission Ammora Season 2 • GIWA Sepolia Testnet (91342)</span>
+    <span>Demo simulasi lokal — bukan saran finansial, jangan pakai dana asli.</span>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  var V_ETH_START = 30; // virtual ETH reserve
+  var CURVE_SUPPLY = 800_000_000;
+  var TOTAL_SUPPLY = 1_000_000_000;
+  // virtual token reserve chosen so start price ~ 2.8e-8 ETH
+  var V_TOK_START = 1073000000;
+
+  function fmt(n, d){ return n.toLocaleString('id-ID',{minimumFractionDigits:d||0, maximumFractionDigits:d||0}); }
+  function fmtEth(n){ return n.toFixed(6).replace(/\.?0+$/,'') + ' ETH'; }
+  function fmtPrice(p){ return p.toExponential(3) + ' ETH'; }
+  function shortAddr(a){ return a.slice(0,6)+'…'+a.slice(-4); }
+
+  var wallet = { connected:false, address:'0xC844E8585520C96fA3767a725cFe93eFF7097e7f', eth:10 };
+  var tokens = [
+    { id:1, name:'Giwa Cat', symbol:'GCAT', desc:'Token komunitas pertama yang diluncurkan dari launchpad ini di GIWA Sepolia.', colors:'#6d5cff,#14b8a6', target:12, vEth:V_ETH_START, vTok:V_TOK_START, raised:2.16, sold: 142_000_000, demo:true, holdings:0, graduated:false },
+    { id:2, name:'Sepolia Doge', symbol:'SDOGE', desc:'Meme doge versi testnet GIWA — kurva baru mulai, harga masih di zona awal.', colors:'#f59e0b,#ef4444', target:6, vEth:V_ETH_START, vTok:V_TOK_START, raised:0.42, sold: 31_000_000, demo:true, holdings:0, graduated:false },
+    { id:3, name:'Ammora Peaks', symbol:'PEAK', desc:'Contoh token yang sudah penuh kurvanya dan graduate ke pool AMM Ammora.', colors:'#0ea5e9,#22c55e', target:12, vEth:V_ETH_START+12, vTok:V_TOK_START-CURVE_SUPPLY, raised:12, sold: CURVE_SUPPLY, demo:true, holdings:0, graduated:true }
+  ];
+  // adjust token1/2 v reserves to match sold approx
+  function reservesFromSold(t){
+    // tokens out = V_TOK_START - vTok ; solve vTok, and vEth = (V_ETH_START*V_TOK_START)/vTok (constant product)
+    var vTok = V_TOK_START - t.sold;
+    var vEth = (V_ETH_START * V_TOK_START) / vTok;
+    t.vTok = vTok; t.vEth = vEth;
+    t.raised = Math.max(0, vEth - V_ETH_START);
+    // if graduated, raised capped display at target
+    if(t.graduated){ t.raised = t.target; }
+  }
+  tokens.forEach(reservesFromSold);
+
+  var selectedId = 1;
+  var mode = 'buy';
+  var txs = [
+    {side:'BUY', sym:'GCAT', amt:'0.50 ETH → 16.240.000 GCAT', time:'baru saja'},
+    {side:'BUY', sym:'SDOGE', amt:'0.10 ETH → 3.410.000 SDOGE', time:'12 mnt lalu'}
+  ];
+
+  var $ = function(id){ return document.getElementById(id); };
+  function toast(msg){ var t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(function(){t.classList.remove('show')},2600); }
+  function price(t){ return t.vEth / t.vTok; }
+  function progress(t){ return Math.min(100, (t.sold / CURVE_SUPPLY)*100); }
+  function selected(){ return tokens.find(function(x){return x.id===selectedId;}) || tokens[0]; }
+
+  function drawCurve(svg, t, highlightPct){
+    if(!svg) return;
+    var pts=[]; var maxP=0; var samples=[];
+    for(var i=0;i<=40;i++){
+      var sold = (i/40)*CURVE_SUPPLY;
+      var vTok = V_TOK_START - sold;
+      var vEth = (V_ETH_START*V_TOK_START)/vTok;
+      var p = vEth/vTok; samples.push(p); if(p>maxP) maxP=p;
+    }
+    samples.forEach(function(p,i){
+      var x = (i/40)*520; var y = 102 - (p/maxP)*92;
+      pts.push(x.toFixed(1)+','+y.toFixed(1));
+    });
+    var hx = (highlightPct/100)*520;
+    svg.innerHTML = '<defs><linearGradient id="g'+svg.id+'" x1="0" x2="1"><stop offset="0" stop-color="#6d5cff"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs>'
+      + '<polyline fill="none" stroke="url(#g'+svg.id+')" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="'+pts.join(' ')+'"/>'
+      + '<line x1="'+hx+'" y1="6" x2="'+hx+'" y2="104" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1.5"/>'
+      + '<text x="8" y="16" font-size="11" fill="#94a3b8" font-weight="700">Harga ↑ seiring terjual →</text>';
+  }
+
+  function renderStats(){
+    $('statTokens').textContent = tokens.length;
+    var total = tokens.reduce(function(s,t){return s+t.raised},0);
+    $('statRaised').textContent = total.toFixed(2)+' ETH';
+  }
+  function renderTokens(filter){
+    filter = filter||'all';
+    var grid=$('tokenGrid'); grid.innerHTML='';
+    tokens.filter(function(t){
+      if(filter==='live') return !t.graduated;
+      if(filter==='graduated') return t.graduated;
+      return true;
+    }).forEach(function(t){
+      var pct = progress(t);
+      var el=document.createElement('article'); el.className='token';
+      el.innerHTML =
+        '<div class="token-top"><div class="avatar" style="background:linear-gradient(135deg,'+t.colors+')">'+t.symbol.slice(0,1)+'</div>'
+        +'<div style="flex:1;min-width:0"><h3>'+escapeHtml(t.name)+'</h3><div class="sym">$'+escapeHtml(t.symbol)+' • '+ (t.graduated?'AMM Pool':'Bonding Curve') +'</div></div>'
+        + (t.demo?'<span class="tag demo">DEMO</span>':'<span class="tag">BARU</span>') +'</div>'
+        +'<p class="desc">'+escapeHtml(t.desc)+'</p>'
+        +'<div><div style="display:flex;justify-content:space-between;font-size:12.5px;font-weight:700"><span>Progress kurva</span><span>'+pct.toFixed(1)+'%</span></div><div class="progress" style="margin-top:6px"><i style="width:'+pct+'%"></i></div></div>'
+        +'<div class="token-meta"><div><span>Harga</span><b class="mono">'+fmtPrice(price(t))+'</b></div><div><span>Terkumpul</span><b>'+t.raised.toFixed(2)+' / '+t.target+' ETH</b></div><div><span>Terjual</span><b>'+fmt(t.sold)+'</b></div><div><span>Status</span><b>'+(t.graduated?'✅ Graduate':'Live')+'</b></div></div>'
+        +'<button class="btn '+(t.graduated?'btn-outline':'btn-teal')+'" data-trade="'+t.id+'">'+(t.graduated?'Lihat Pool (sudah graduate)':'Trade di Kurva →')+'</button>';
+      grid.appendChild(el);
+    });
+    if(!grid.children.length){ grid.innerHTML='<div class="empty" style="grid-column:1/-1">Belum ada token di kategori ini. Buat token baru di atas.</div>'; }
+    grid.querySelectorAll('[data-trade]').forEach(function(b){ b.addEventListener('click', function(){ selectedId=parseInt(b.getAttribute('data-trade'),10); renderTrade(); document.getElementById('trade').scrollIntoView({behavior:'smooth'}); }); });
+    renderStats();
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]}); }
+
+  function estimate(){
+    var t=selected(); var amt=parseFloat($('amount').value)||0;
+    if(mode==='buy'){
+      if(amt<=0){ $('receiveEst').textContent='—'; return; }
+      var newVEth=t.vEth+amt; var newVTok=(t.vEth*t.vTok)/newVEth; var out=(t.vTok-newVTok)*0.99;
+      $('receiveEst').textContent = fmt(Math.floor(out))+' '+t.symbol;
+    } else {
+      if(amt<=0){ $('receiveEst').textContent='—'; return; }
+      var amtTok=amt; // in sell mode amount field is token amount (in millions? use raw) - interpret as token count
+      var outEth = 0;
+      if(amtTok < t.vTok){ var nvTok=t.vTok+amtTok; var nvEth=(t.vEth*t.vTok)/nvTok; outEth=(t.vEth-nvEth)*0.99; }
+      $('receiveEst').textContent = outEth.toFixed(6)+' ETH';
+    }
+  }
+  function renderTrade(){
+    var t=selected();
+    $('tradeTitle').textContent='Trade — '+t.name+' ('+t.symbol+')';
+    $('tradePrice').textContent=fmtPrice(price(t));
+    $('tradeProgress').textContent=progress(t).toFixed(1)+'% dari kurva';
+    $('tradeRaised').textContent=t.raised.toFixed(3)+' / '+t.target+' ETH';
+    $('tradeBar').style.width=progress(t)+'%';
+    $('tradeBalance').textContent=wallet.eth.toFixed(2)+' ETH testnet • '+fmt(t.holdings)+' '+t.symbol;
+    drawCurve($('tradeSvg'), t, progress(t));
+    $('amountLabel').textContent = mode==='buy' ? 'Jumlah ETH' : 'Jumlah token '+t.symbol;
+    $('tradeBtn').textContent = mode==='buy' ? ('Beli '+t.symbol) : ('Jual '+t.symbol);
+    $('tradeBtn').className='btn '+(mode==='buy'?'btn-teal':'btn-primary');
+    $('tradeBtn').style.width='100%'; $('tradeBtn').style.marginTop='14px';
+    if(t.graduated){ $('tradeBtn').disabled=true; $('tradeBtn').textContent='Sudah graduate — trade di pool AMM'; } else { $('tradeBtn').disabled=false; }
+    estimate();
+    var ul=$('txList'); ul.innerHTML='';
+    if(!txs.length){ ul.innerHTML='<li>Tidak ada aktivitas</li>'; }
+    txs.slice(0,6).forEach(function(tx){
+      var li=document.createElement('li');
+      li.innerHTML='<span><b style="color:'+(tx.side==='BUY'?'var(--teal)':'var(--red)')+'">'+tx.side+'</b> &nbsp;'+escapeHtml(tx.amt)+'</span><span style="color:var(--muted)">'+tx.time+'</span>';
+      ul.appendChild(li);
+    });
+  }
+  function renderPreview(){
+    var target=parseFloat($('tCurve').value)||12;
+    $('gradTarget').textContent='Terkumpul '+target+' ETH di kurva';
+    // start / end price
+    var p0=V_ETH_START/V_TOK_START;
+    var vTokEnd=V_TOK_START-CURVE_SUPPLY; var vEthEnd=(V_ETH_START*V_TOK_START)/vTokEnd; var p1=vEthEnd/vTokEnd;
+    $('pStart').textContent=fmtPrice(p0); $('pEnd').textContent=fmtPrice(p1);
+    var pct=parseFloat($('simRange').value)||0;
+    $('simPct').textContent=pct+'%'; $('simBar').style.width=pct+'%';
+    var sold=(pct/100)*CURVE_SUPPLY; var vTok=V_TOK_START-sold; var vEth=(V_ETH_START*V_TOK_START)/vTok; var p=vEth/vTok;
+    $('simText').textContent = pct>=100 ? 'Kurva penuh — token graduate ke pool AMM Ammora. Harga akhir '+fmtPrice(p)+'.' : 'Di '+pct+'%: terjual '+fmt(sold)+' token, harga '+fmtPrice(p)+', terkumpul '+(vEth-V_ETH_START).toFixed(2)+' ETH.';
+    drawCurve($('curveSvg'), tokens[0], pct);
+  }
+
+  // Events
+  $('simRange').addEventListener('input', renderPreview);
+  $('tCurve').addEventListener('change', renderPreview);
+  document.querySelectorAll('.tab').forEach(function(tab){ tab.addEventListener('click', function(){ document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('active')}); tab.classList.add('active'); renderTokens(tab.getAttribute('data-filter')); }); });
+  document.querySelectorAll('[data-q]').forEach(function(b){ b.addEventListener('click', function(){ if(mode!=='buy'){ mode='buy'; syncSeg(); } $('amount').value=b.getAttribute('data-q'); estimate(); }); });
+  $('amount').addEventListener('input', estimate);
+  function syncSeg(){
+    $('buyTab').className = mode==='buy' ? 'active-buy' : '';
+    $('sellTab').className = mode==='sell' ? 'active-sell' : '';
+    renderTrade();
+  }
+  $('buyTab').addEventListener('click', function(){ mode='buy'; $('amount').value='0.50'; syncSeg(); });
+  $('sellTab').addEventListener('click', function(){ mode='sell'; var t=selected(); $('amount').value = t.holdings>0 ? String(Math.min(t.holdings,1000000)) : '100000'; syncSeg(); });
+
+  $('tradeBtn').addEventListener('click', function(){
+    var t=selected(); var amt=parseFloat($('amount').value)||0;
+    if(amt<=0){ toast('Masukkan jumlah dulu.'); return; }
+    if(mode==='buy'){
+      if(amt>wallet.eth){ toast('Saldo ETH simulasi tidak cukup.'); return; }
+      var newVEth=t.vEth+amt; var newVTok=(t.vEth*t.vTok)/newVEth; var out=Math.floor((t.vTok-newVTok)*0.99);
+      if(t.sold+out>=CURVE_SUPPLY){ out=CURVE_SUPPLY-t.sold; }
+      t.vEth=newVEth; t.vTok=t.vTok-out/0.99; // approx keep curve consistent-ish
+      // recompute cleanly: set sold and rebuild reserves
+      t.sold+=out; reservesFromSold(t);
+      if(t.raised>=t.target || t.sold>=CURVE_SUPPLY){ t.graduated=true; t.raised=t.target; toast('🎓 '+t.symbol+' graduate ke pool AMM!'); } else { toast('Beli berhasil: '+fmt(out)+' '+t.symbol); }
+      wallet.eth-=amt; t.holdings+=out;
+      txs.unshift({side:'BUY', sym:t.symbol, amt: amt.toFixed(2)+' ETH → '+fmt(out)+' '+t.symbol, time:'baru saja'});
+    } else {
+      if(amt>t.holdings){ toast('Saldo '+t.symbol+' kamu tidak cukup untuk jual segitu.'); return; }
+      var nvTok=t.vTok+amt; var nvEth=(t.vEth*t.vTok)/nvTok; var outEth=(t.vEth-nvEth)*0.99;
+      t.holdings-=amt; t.sold=Math.max(0,t.sold-amt); reservesFromSold(t);
+      wallet.eth+=outEth;
+      txs.unshift({side:'SELL', sym:t.symbol, amt: fmt(amt)+' '+t.symbol+' → '+outEth.toFixed(4)+' ETH', time:'baru saja'});
+      toast('Jual berhasil: '+outEth.toFixed(4)+' ETH');
+    }
+    renderTokens(document.querySelector('.tab.active') ? document.querySelector('.tab.active').getAttribute('data-filter') : 'all');
+    renderTrade();
+  });
+
+  $('createForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var name=$('tName').value.trim(); var sym=$('tSymbol').value.trim().toUpperCase(); var desc=$('tDesc').value.trim(); var target=parseFloat($('tCurve').value)||12; var colors=$('tColor').value;
+    if(!name||!sym){ toast('Nama & simbol wajib diisi.'); return; }
+    var nt={ id:Date.now(), name:name, symbol:sym, desc:desc||'Token baru di GIWA Sepolia.', colors:colors, target:target, vEth:V_ETH_START, vTok:V_TOK_START, raised:0, sold:0, demo:false, holdings:0, graduated:false };
+    tokens.unshift(nt); selectedId=nt.id;
+    renderTokens('all'); renderTrade(); renderPreview();
+    toast('🚀 '+sym+' berhasil diluncurkan di bonding curve!');
+    document.getElementById('tokens').scrollIntoView({behavior:'smooth'});
+    // update code block symbol
+    $('codeBlock').textContent = $('codeBlock').textContent.replace(/Giwa Cat/g, name).replace(/GCAT/g, sym);
+    $('projName').value='Ammora Launchpad — '+name;
+    updateXDraft();
+  });
+
+  $('walletBtn').addEventListener('click', async function(){
+    if(wallet.connected){ toast('Wallet terhubung: '+shortAddr(wallet.address)); return; }
+    // Try real injected wallet if present, otherwise simulate
+    try{
+      if(window.ethereum && window.ethereum.request){
+        var accs=await window.ethereum.request({method:'eth_requestAccounts'});
+        if(accs && accs[0]) wallet.address=accs[0];
+      }
+    }catch(e){ /* fall back to demo address */ }
+    wallet.connected=true;
+    $('walletBtn').textContent='● '+shortAddr(wallet.address);
+    toast('Wallet terhubung (testnet GIWA Sepolia)');
+    renderTrade();
+  });
+
+  $('copyCode').addEventListener('click', function(){
+    var txt=$('codeBlock').textContent;
+    if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(function(){toast('Kode SDK disalin.')}); } else { toast('Salin manual dari blok kode.'); }
+  });
+
+  function updateXDraft(){
+    var name=$('projName').value||'Ammora Launchpad';
+    var text='Saya baru saja membangun launchpad dengan Ammora SDK di GIWA Sepolia 🚀\n\n'+name+' — buat token baru + bonding curve, lalu graduate ke pool AMM.\n\nTestnet chain 91342 • @AmmoraHQ #Ammora #GIWA';
+    $('xDraft').href='https://twitter.com/intent/tweet?text='+encodeURIComponent(text);
+  }
+  $('projName').addEventListener('input', updateXDraft);
+
+  // Init
+  renderPreview(); renderTokens('all'); renderTrade(); updateXDraft();
+})();
+</script>
+</body>
+</html>
