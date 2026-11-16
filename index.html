@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ammora Launchpad — GIWA Sepolia Testnet</title>
-  <script type="module" crossorigin src="./assets/index-B-Wr93dA.js"></script>
+  <script type="module" crossorigin src="./assets/index-kbAz3rv_.js"></script>
   <link rel="stylesheet" crossorigin href="./assets/index-DDNPiYeC.css">
 </head>
 <body>
@@ -18,32 +18,33 @@
   <div class="pills">
     <span class="pill">SDK <strong>@ammora-protocol/sdk 0.3.9</strong></span>
     <span class="pill">Chain <strong>91342</strong></span>
+    <span class="pill">Block <strong id="headBlock">—</strong></span>
   </div>
   <div class="wallet-row">
-    <button class="btn btn-grad" id="walletBtn">Hubungkan Wallet</button>
-    <button class="btn btn-outline" id="disconnectBtn" style="display:none">Putuskan</button>
+    <button class="btn btn-grad" id="walletBtn">Connect Wallet</button>
+    <button class="btn btn-outline" id="disconnectBtn" style="display:none">Disconnect</button>
   </div>
 </div>
 
 <div class="hero">
   <div class="hero-card">
-    <span class="badge">Testnet • SDK Asli • Tanpa Simulasi</span>
-    <h1>Luncurkan tokenmu di bonding curve.</h1>
-    <p>Buat token baru, pantau kurvanya naik, lalu trade dan migrate ke pool AMM. Semua transaksi asli di GIWA Sepolia, dihitung dari state chain terbaru.</p>
+    <span class="badge">Testnet • Real SDK • No Simulation</span>
+    <h1>Launch your token on the bonding curve.</h1>
+    <p>Create a new token, watch its curve rise, then trade it and migrate to the AMM pool. Every transaction is real on GIWA Sepolia, priced from the latest on-chain state.</p>
     <div class="cta-row">
-      <a class="btn btn-grad" href="#create">Buat Token</a>
-      <a class="btn btn-outline" href="#tokens">Lihat Token Live</a>
+      <a class="btn btn-grad" href="#create">Create a Token</a>
+      <a class="btn btn-outline" href="#tokens">Browse Live Tokens</a>
     </div>
     <div class="stats">
       <div class="stat">
-        <span>Token di Launchpad</span>
+        <span>Tokens on the Launchpad</span>
         <div class="num" id="statTokens">—</div>
-        <div class="note">Dibaca dari event LaunchCreated on-chain.</div>
+        <div class="note">Read from on-chain LaunchCreated events.</div>
       </div>
       <div class="stat">
-        <span>Total Terkumpul</span>
+        <span>Total Raised</span>
         <div class="num" id="statRaised">—</div>
-        <div class="note">Jumlah quoteReserve semua kurva aktif (WETH).</div>
+        <div class="note">Sum of quoteReserve across all active curves (WETH).</div>
       </div>
       <div class="stat">
         <span>Template &amp; Factory</span>
@@ -53,29 +54,29 @@
     </div>
   </div>
   <ol class="steps">
-    <li><span class="num">1</span><div><b>Hubungkan wallet</b><p>Pastikan chain GIWA Sepolia (91342). Siapkan sedikit ETH testnet untuk gas.</p></div></li>
-    <li><span class="num">2</span><div><b>Buat token</b><p>Quick Create (1 tx) atau Atomic + First Buy (1 tx). Preview dihitung dari chain sebelum kamu sign.</p></div></li>
-    <li><span class="num">3</span><div><b>Trade &amp; migrate</b><p>Beli/jual di kurva. Saat batas migrate tercapai, token graduate ke pool AMM.</p></div></li>
+    <li><span class="num">1</span><div><b>Connect your wallet</b><p>Make sure you're on GIWA Sepolia (91342). Keep a little testnet ETH ready for gas.</p></div></li>
+    <li><span class="num">2</span><div><b>Create a token</b><p>Quick Create (1 tx) or Atomic + First Buy (1 tx). The preview is priced from the chain before you sign.</p></div></li>
+    <li><span class="num">3</span><div><b>Trade &amp; migrate</b><p>Buy and sell on the curve. Once the migrate threshold is reached, the token graduates to the AMM pool.</p></div></li>
   </ol>
 </div>
 
 <section class="card" id="create" style="margin-top:18px">
-  <h2>Buat Token Baru</h2>
-  <p class="sub">Pilih mode: <b>Quick Create</b> (satu transaksi: Config + token + kurva) atau <b>Atomic Create + First Buy</b> (sama, ditambah first buy WETH di transaksi yang sama). Preview dihitung dari state chain terbaru sebelum kamu menandatangani apa pun.</p>
+  <h2>Create a New Token</h2>
+  <p class="sub">Choose a mode: <b>Quick Create</b> (one transaction: Config + token + curve) or <b>Atomic Create + First Buy</b> (the same, plus a WETH first buy in the same transaction). The preview is priced from the latest on-chain state before you sign anything.</p>
   <form id="createForm" class="form" autocomplete="off">
-    <div class="field"><label for="tName">Nama token</label><input id="tName" required maxlength="32" placeholder="My Launch"></div>
-    <div class="field"><label for="tSymbol">Simbol</label><input id="tSymbol" required maxlength="8" placeholder="ML"></div>
-    <div class="field" style="grid-column:1/-1"><label for="tDesc">Deskripsi (untuk metadata)</label><input id="tDesc" maxlength="200" placeholder="Token komunitas..."></div>
-    <div class="field"><label for="tSupply">Total Supply (token)</label><input id="tSupply" inputmode="decimal" value="1000000"></div>
+    <div class="field"><label for="tName">Token name</label><input id="tName" required maxlength="32" placeholder="My Launch"></div>
+    <div class="field"><label for="tSymbol">Symbol</label><input id="tSymbol" required maxlength="8" placeholder="ML"></div>
+    <div class="field" style="grid-column:1/-1"><label for="tDesc">Description (for metadata)</label><input id="tDesc" maxlength="200" placeholder="Community token..."></div>
+    <div class="field"><label for="tSupply">Total supply (tokens)</label><input id="tSupply" inputmode="decimal" value="1000000"></div>
     <details class="adv" style="grid-column:1/-1">
-      <summary>Pengaturan lanjutan</summary>
+      <summary>Advanced settings</summary>
       <div class="form">
-        <div class="field"><label for="tThreshold">Batas migrate (WETH)</label><input id="tThreshold" inputmode="decimal" value="0.001"></div>
-        <div class="field" style="grid-column:1/-1"><label for="tMeta">Metadata URI (opsional — kosongkan untuk data: URI otomatis dari nama/simbol/deskripsi)</label><input id="tMeta" placeholder="https://... atau ipfs://... atau data:application/json,..."></div>
+        <div class="field"><label for="tThreshold">Migrate threshold (WETH)</label><input id="tThreshold" inputmode="decimal" value="0.001"></div>
+        <div class="field" style="grid-column:1/-1"><label for="tMeta">Metadata URI (optional — leave empty for an automatic data: URI built from name/symbol/description)</label><input id="tMeta" placeholder="https://... or ipfs://... or data:application/json,..."></div>
       </div>
     </details>
     <div class="field" style="grid-column:1/-1">
-      <label>Mode pembuatan</label>
+      <label>Creation mode</label>
       <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px">
         <label style="display:flex;gap:6px;align-items:center;font-weight:400"><input type="radio" name="createMode" value="quick" checked> Quick Create (1 tx)</label>
         <label style="display:flex;gap:6px;align-items:center;font-weight:400"><input type="radio" name="createMode" value="atomic"> Atomic + First Buy (1 tx)</label>
@@ -83,80 +84,80 @@
     </div>
     <div class="field" id="firstBuyRow" style="display:none"><label for="firstBuy">First buy (WETH)</label><input id="firstBuy" inputmode="decimal" value="0.0001"></div>
     <div class="field" style="grid-column:1/-1">
-      <div class="preview" id="createPreview">Isi formulir, lalu klik "Buat Token" untuk preview on-chain. Preview menghitung Config + harga + value transaksi dari chain terbaru.</div>
+      <div class="preview" id="createPreview">Fill in the form, then click “Create Token” for an on-chain preview. The preview computes the Config, price, and transaction value from the latest chain state.</div>
     </div>
-    <button class="btn btn-grad" id="createBtn" type="button" style="grid-column:1/-1">Buat Token (on-chain)</button>
+    <button class="btn btn-grad" id="createBtn" type="button" style="grid-column:1/-1">Create Token (on-chain)</button>
   </form>
-  <p class="hint">Biaya gas testnet dibayar dari ETH GIWA Sepolia di wallet kamu. Transaksi dibuat hanya setelah kamu menandatangani di wallet. Token &amp; curve dibaca dari receipt on-chain, bukan prediksi.</p>
+  <p class="hint">Testnet gas is paid in GIWA Sepolia ETH from your wallet. A transaction is only created after you sign it in your wallet. Token &amp; curve are read from the on-chain receipt, never predicted.</p>
 </section>
 
 <section id="tokens">
   <div class="section-head">
     <div>
-      <h2>Live Token</h2>
-      <p>Launch asli di GIWA Sepolia, dibaca langsung dari chain (bukan simulasi).</p>
+      <h2>Live Tokens</h2>
+      <p>Real launches on GIWA Sepolia, read straight from the chain (not a simulation).</p>
     </div>
     <div class="tabs">
-      <button class="tab active" data-filter="all">Semua</button>
-      <button class="tab" data-filter="live">Di Kurva</button>
-      <button class="tab" data-filter="migrate">Siap Migrate</button>
+      <button class="tab active" data-filter="all">All</button>
+      <button class="tab" data-filter="live">On Curve</button>
+      <button class="tab" data-filter="migrate">Ready to Migrate</button>
       <button class="tab" data-filter="graduated">Graduated</button>
     </div>
   </div>
-  <div style="margin:0 0 12px"><input id="tokenSearch" placeholder="Cari token: nama, simbol, atau alamat…" autocomplete="off"></div>
+  <div style="margin:0 0 12px"><input id="tokenSearch" placeholder="Search tokens: name, symbol, or address…" autocomplete="off"></div>
   <div id="tokenGrid" class="tokens"></div>
 </section>
 
 <section class="card" id="trade" style="margin-top:18px">
   <h2 id="tradeTitle">Trade</h2>
-  <p class="sub" id="tradeSub">Pilih token di daftar di atas.</p>
+  <p class="sub" id="tradeSub">Pick a token from the list above.</p>
   <svg id="tradeSvg" viewBox="0 0 520 110" width="100%" height="110" style="background:#f8fafc;border-radius:12px"></svg>
-  <div class="kv"><span>Harga (perkiraan)</span><b id="tradePrice">—</b></div>
-  <div class="kv"><span>Progres</span><b id="tradeProgress">—</b></div>
-  <div class="kv"><span>Terkumpul</span><b id="tradeRaised">—</b></div>
+  <div class="kv"><span>Price (estimate)</span><b id="tradePrice">—</b></div>
+  <div class="kv"><span>Progress</span><b id="tradeProgress">—</b></div>
+  <div class="kv"><span>Raised</span><b id="tradeRaised">—</b></div>
   <div class="progress"><i id="tradeBar"></i></div>
-  <div class="kv"><span>Saldomu</span><b id="tradeBalance">—</b></div>
+  <div class="kv"><span>Your balance</span><b id="tradeBalance">—</b></div>
   <div class="form" style="margin-top:14px">
     <div class="field" style="grid-column:1/-1">
-      <label>Aksi</label>
+      <label>Action</label>
       <div class="tabs">
-        <button id="buyTab" class="active-buy" type="button">Beli</button>
-        <button id="sellTab" type="button">Jual</button>
+        <button id="buyTab" class="active-buy" type="button">Buy</button>
+        <button id="sellTab" type="button">Sell</button>
       </div>
     </div>
-    <div class="field"><label id="amountLabel" for="amount">Jumlah WETH</label><input id="amount" inputmode="decimal" placeholder="0.001">
+    <div class="field"><label id="amountLabel" for="amount">WETH amount</label><input id="amount" inputmode="decimal" placeholder="0.001">
       <div style="display:flex;gap:6px;margin-top:8px">
         <button type="button" class="btn btn-outline" data-q="0.0001">0.0001</button>
         <button type="button" class="btn btn-outline" data-q="0.001">0.001</button>
         <button type="button" class="btn btn-outline" data-q="0.01">0.01</button>
       </div>
     </div>
-    <div class="field"><label>Estimasi diterima (slippage 1%)</label><div class="preview" id="receiveEst" style="margin:0">—</div></div>
-    <button class="btn btn-teal" id="tradeBtn" type="button" style="grid-column:1/-1">Beli Token</button>
+    <div class="field"><label>Estimated to receive (1% slippage)</label><div class="preview" id="receiveEst" style="margin:0">—</div></div>
+    <button class="btn btn-teal" id="tradeBtn" type="button" style="grid-column:1/-1">Buy Token</button>
   </div>
   <div class="form" style="margin-top:16px">
-    <div class="field"><label for="wrapAmount">Wrap ETH menjadi WETH (untuk beli)</label><input id="wrapAmount" inputmode="decimal" placeholder="0.01"></div>
+    <div class="field"><label for="wrapAmount">Wrap ETH into WETH (to buy)</label><input id="wrapAmount" inputmode="decimal" placeholder="0.01"></div>
     <div class="field"><label>&nbsp;</label><button class="btn btn-outline" id="wrapBtn" type="button">Wrap ETH</button></div>
   </div>
   <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
-    <button class="btn btn-grad" id="migrateBtn" type="button" style="display:none">Migrate ke Pool AMM</button>
+    <button class="btn btn-grad" id="migrateBtn" type="button" style="display:none">Migrate to AMM Pool</button>
   </div>
   <div class="preview" id="feeBox" style="display:none;margin-top:14px">
-    <b>Fee kurva</b><br><span id="feeInfo">—</span>
+    <b>Curve fees</b><br><span id="feeInfo">—</span>
     <div style="display:flex;gap:8px;margin-top:10px">
-      <button class="btn btn-outline" id="claimQuoteBtn" type="button">Klaim WETH</button>
-      <button class="btn btn-outline" id="claimBaseBtn" type="button">Klaim token</button>
+      <button class="btn btn-outline" id="claimQuoteBtn" type="button">Claim WETH</button>
+      <button class="btn btn-outline" id="claimBaseBtn" type="button">Claim tokens</button>
     </div>
   </div>
   <div class="log" style="margin-top:16px">
-    <b>Aktivitas on-chain</b>
+    <b>On-chain activity</b>
     <ul id="txList"></ul>
   </div>
 </section>
 
 <footer>
   <p>Testnet GIWA Sepolia (chain 91342) • SDK @ammora-protocol/sdk 0.3.9 • RPC https://sepolia-rpc.giwa.io • Explorer https://sepolia-explorer.giwa.io</p>
-  <p>Perangkat lunak beta tanpa audit. Jangan gunakan dana asli — ini hanya testnet.</p>
+  <p>Beta software, no audit. Never use real funds — testnet only. • <a href="https://ammora.org" target="_blank" rel="noopener">Ammora</a> • <a href="https://github.com/mhmdyvsvf/ammora-launchpad" target="_blank" rel="noopener">Source on GitHub</a></p>
 </footer>
 </div>
 <div class="toast" id="toast"></div>
