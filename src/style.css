@@ -45,6 +45,7 @@ button{cursor:pointer}
 @media(max-width:560px){.hero h1{font-size:30px}}
 .hero p{color:var(--muted);margin:0 0 16px;font-size:15.5px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+@media(max-width:640px){.stats{grid-template-columns:1fr}}
 .stat{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px}
 .stat b{font-size:17px;display:block}
 .stat span{font-size:12px;color:var(--muted);font-weight:600}
@@ -160,7 +161,7 @@ footer{margin-top:32px;padding-top:18px;border-top:1px solid var(--line);color:v
 .stat .num{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
 .pulse{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block;vertical-align:1px;margin-right:2px;box-shadow:0 0 0 0 rgba(34,197,94,.5);animation:pulse 2s infinite}
 @keyframes pulse{70%{box-shadow:0 0 0 7px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
-.spot{margin-top:18px;display:flex;gap:14px;align-items:center;justify-content:space-between;background:linear-gradient(90deg,rgba(109,92,255,.13),rgba(20,184,166,.13));border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.spot{margin-top:18px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:linear-gradient(90deg,rgba(109,92,255,.13),rgba(20,184,166,.13));border:1px solid var(--line);border-radius:16px;padding:14px 16px}
 .spot-info{min-width:0}
 .spot-info span{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.06em;display:block}
 .spot-info b{font-size:17px;display:block;overflow-wrap:anywhere}

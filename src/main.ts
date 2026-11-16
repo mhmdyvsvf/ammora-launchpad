@@ -52,6 +52,37 @@ function renderActivity() {
     : `<li><span>No activity in this browser yet. Creates, buys, and sells from this page will appear here.</span></li>`;
 }
 
+// Saved launch list (localStorage): repeat visits render instantly from the
+// last good read while fresh chain data loads behind it. Bigints are stored
+// as decimal strings and converted back on load. Best-effort: a corrupt or
+// unavailable store just means no cache, never a broken page.
+const CACHE_KEY = "ammora-launches-cache";
+const CACHE_BIGINT_FIELDS = ["configId", "sqrtPrice", "baseReserve", "quoteReserve", "migrationQuoteThreshold", "migrationBaseThreshold"] as const;
+function loadCachedLaunches(): { savedAt: number; launches: LaunchSummary[] } | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { savedAt: number; launches: Array<Record<string, unknown>> };
+    if (!Array.isArray(parsed.launches) || !parsed.launches.length) return null;
+    const launches = parsed.launches.map((o) => {
+      const out = { ...o } as Record<string, unknown>;
+      for (const f of CACHE_BIGINT_FIELDS) out[f] = BigInt(String(o[f] ?? "0"));
+      return out as unknown as LaunchSummary;
+    });
+    return { savedAt: parsed.savedAt, launches };
+  } catch { return null; }
+}
+function saveCachedLaunches(list: LaunchSummary[]) {
+  try {
+    const launches = list.map((l) => {
+      const out = { ...l } as Record<string, unknown>;
+      for (const f of CACHE_BIGINT_FIELDS) out[f] = (l[f] as bigint).toString();
+      return out;
+    });
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), launches }));
+  } catch { /* storage full or blocked — cache is optional */ }
+}
+
 let client: PublicClient;
 let wallet: WalletClient | null = null;
 let account: Address | null = null;
@@ -137,6 +168,21 @@ async function init() {
   $("statTokens").textContent = "loading…";
   $("statRaised").textContent = "loading…";
   const statusEl = $("tokenLoadStatus");
+  // Instant repeat visits: show the saved list right away (if any) while
+  // fresh chain data loads behind it. First visit has no cache — the
+  // skeleton cards in the HTML show instead.
+  const cached = loadCachedLaunches();
+  if (cached) {
+    launches = cached.launches;
+    launches.sort((a, b) => Number(b.quoteReserve - a.quoteReserve));
+    $("statTokens").textContent = String(launches.length);
+    const raised = launches.reduce((a, x) => a + x.quoteReserve, 0n);
+    $("statRaised").textContent = `${fmt(raised, 18, 4)} WETH`;
+    const when = new Date(cached.savedAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    statusEl.textContent = `Showing saved list from ${when} • updating from the chain…`;
+    renderTokens();
+    updateSpot();
+  }
   try {
     await refreshHead();
     await verifyCore(client, head);
@@ -146,10 +192,12 @@ async function init() {
     $("statTemplate").textContent = template.enabled ? `Template #6 active • ${nextId - 1n} configs registered` : "Template #6 inactive";
     // Incremental render: each token appears in the grid as soon as its
     // on-chain data is read, with a running raised total — the page is
-    // never a blank list for the whole ~2 min load.
+    // never a blank list for the whole ~2 min load. Upsert: fresh rows
+    // replace the cached rows for the same curve.
     const onLaunch = (l: LaunchSummary) => {
-      if (launches.some((x) => x.curve === l.curve)) return;
-      launches.push(l);
+      const idx = launches.findIndex((x) => x.curve === l.curve);
+      if (idx >= 0) launches[idx] = l;
+      else launches.push(l);
       launches.sort((a, b) => Number(b.quoteReserve - a.quoteReserve));
       $("statTokens").textContent = String(launches.length);
       const raised = launches.reduce((a, x) => a + x.quoteReserve, 0n);
@@ -175,13 +223,16 @@ async function init() {
       : "No launches found on-chain yet. Create the first token above.";
     renderTokens();
     updateSpot();
+    saveCachedLaunches(launches);
     if (found.length) selectLaunch(found[0]!);
     toast("Connected to GIWA Sepolia. Launch list read straight from the chain.");
   } catch (e) {
     console.error(e);
     toast(`Failed to read the chain: ${(e as Error).message.slice(0, 120)}`);
     $("statTokens").textContent = "failed";
-    statusEl.textContent = "Could not read the launch list. Check your connection and refresh the page.";
+    statusEl.textContent = launches.length
+      ? "Could not refresh from the chain — showing the saved list."
+      : "Could not read the launch list. Check your connection and refresh the page.";
   }
 }
 
@@ -410,6 +461,7 @@ async function reloadLaunches() {
   $("statTokens").textContent = String(launches.length);
   renderTokens();
   updateSpot();
+  saveCachedLaunches(launches);
 }
 
 async function onTrade() {
