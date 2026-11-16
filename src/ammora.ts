@@ -190,7 +190,7 @@ async function enrichMany(head: bigint, bases: Array<{ token: Address; curve: Ad
   const queue = bases.slice(0, cap);
   let i = 0;
   // Each worker gets its OWN public client (own paced transport queue).
-  // Sharing one client serializes all calls at 400ms — 24 curves would take
+  // Sharing one client serializes all calls at 400ms — 100 curves would take
   // minutes. Four parallel clients stay inside the <=4 workers rule.
   const workers = Array.from({ length: 4 }, async () => {
     const workerClient = getPublicClient();
@@ -240,7 +240,7 @@ export async function listLaunches(
         metadataURI: it.metadataUri ?? "", statusHint: statusMap[it.status] ?? 0,
       }));
       onProgress?.(0, bases.length, "enrich");
-      const enriched = await enrichMany(head, bases, 24, onProgress, onLaunch);
+      const enriched = await enrichMany(head, bases, 100, onProgress, onLaunch);
       if (enriched.length) return enriched.sort((a, b) => Number(b.quoteReserve - a.quoteReserve));
     }
     } finally {
@@ -286,7 +286,7 @@ export async function listLaunches(
   }));
   const bases = [...found.values()].sort((a, b) => Number(b.configId - a.configId));
   onProgress?.(0, bases.length, "enrich");
-  return enrichMany(head, bases, 24, onProgress, onLaunch);
+  return enrichMany(head, bases, 100, onProgress, onLaunch);
 }
 
 export async function getCurveQuote(

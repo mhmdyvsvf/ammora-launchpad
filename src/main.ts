@@ -224,7 +224,9 @@ async function init() {
     renderTokens();
     updateSpot();
     saveCachedLaunches(launches);
-    if (found.length) selectLaunch(found[0]!);
+    // Auto-select the top token only if the user has not already picked one
+    // while the list was loading — never yank their selection away.
+    if (found.length && !selected) selectLaunch(found[0]!);
     toast("Connected to GIWA Sepolia. Launch list read straight from the chain.");
   } catch (e) {
     console.error(e);
